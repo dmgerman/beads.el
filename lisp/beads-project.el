@@ -112,7 +112,10 @@ Offer only known projects with an initialized Beads workspace."
     (add-to-list 'project-switch-commands
                  '(beads-project-list "Beads issues") t)))
 
-(add-hook 'after-init-hook #'beads-project--setup-switch-command)
+;; When loaded lazily after startup, `after-init-hook' has already run.
+(if after-init-time
+    (beads-project--setup-switch-command)
+  (add-hook 'after-init-hook #'beads-project--setup-switch-command))
 
 (provide 'beads-project)
 ;;; beads-project.el ends here

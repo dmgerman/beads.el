@@ -71,5 +71,25 @@
   (with-temp-buffer
     (should (local-variable-if-set-p 'beads-list--project-root))))
 
+(ert-deftest beads-project-test-switch-command-when-loaded-after-init ()
+  "Test that loading after startup registers the switch command directly."
+  (let ((after-init-time (current-time))
+        (after-init-hook nil)
+        (beads-project-add-switch-command t)
+        (project-switch-commands nil))
+    (load (locate-library "beads-project.el") nil t)
+    (should (assq 'beads-project-list project-switch-commands))
+    (should-not after-init-hook)))
+
+(ert-deftest beads-project-test-switch-command-when-loaded-during-init ()
+  "Test that loading during startup defers registration to `after-init-hook'."
+  (let ((after-init-time nil)
+        (after-init-hook nil)
+        (beads-project-add-switch-command t)
+        (project-switch-commands nil))
+    (load (locate-library "beads-project.el") nil t)
+    (should-not (assq 'beads-project-list project-switch-commands))
+    (should (memq 'beads-project--setup-switch-command after-init-hook))))
+
 (provide 'beads-project-test)
 ;;; beads-project-test.el ends here
