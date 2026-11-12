@@ -143,14 +143,14 @@ Checks BEADS_DIR env, BEADS_DB env, then walks up from default-directory."
 (defun beads-client--project-root ()
   "Get the project root directory for the current Beads workspace.
 This is the parent directory of .beads/."
-  (when-let ((db-path (beads-client--find-database)))
+  (when-let* ((db-path (beads-client--find-database)))
     (file-name-directory
      (directory-file-name
       (file-name-directory db-path)))))
 
 (defun beads-client--get-managed-daemon ()
   "Get the managed daemon process for the current project, if any."
-  (when-let ((root (beads-client--project-root)))
+  (when-let* ((root (beads-client--project-root)))
     (let ((proc (gethash root beads-client--project-daemons)))
       (when (and proc (process-live-p proc))
         proc))))
@@ -175,7 +175,7 @@ Returns the process, or nil if starting fails."
       (signal 'beads-client-error '("No Beads project found")))
     (when (gethash root beads-client--daemon-start-in-progress)
       (signal 'beads-client-error '("Daemon start already in progress")))
-    (when-let ((existing (gethash root beads-client--project-daemons)))
+    (when-let* ((existing (gethash root beads-client--project-daemons)))
       (when (process-live-p existing)
         (cl-return-from beads-client--start-managed-daemon existing)))
     (puthash root t beads-client--daemon-start-in-progress)
@@ -232,7 +232,7 @@ Interactive command to manually start the daemon."
 (defun beads-client-stop-daemon ()
   "Stop the managed beads daemon for the current project."
   (interactive)
-  (if-let ((proc (beads-client--get-managed-daemon)))
+  (if-let* ((proc (beads-client--get-managed-daemon)))
       (progn
         (delete-process proc)
         (message "Beads daemon stopped"))

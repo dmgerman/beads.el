@@ -208,7 +208,7 @@ relationships contain cycles or shared dependencies."
   "Open detail view for issue at point."
   (interactive)
   (let ((issue nil))
-    (when-let ((widget (widget-at (point))))
+    (when-let* ((widget (widget-at (point))))
       (setq issue (widget-get widget :node)))
     (unless issue
       (when beads-hierarchy--by-id

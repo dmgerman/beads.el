@@ -883,7 +883,7 @@
                   (should (eq source-window (selected-window)))
                   (with-current-buffer (window-buffer preview-window)
                     (should (equal beads-detail--current-issue-id "preview-two")))))))
-        (when-let ((preview (get-buffer "*Beads Preview*"))) (kill-buffer preview))
+        (when-let* ((preview (get-buffer "*Beads Preview*"))) (kill-buffer preview))
         (kill-buffer source)))))
 
 (provide 'beads-detail-test)

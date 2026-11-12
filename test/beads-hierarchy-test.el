@@ -159,7 +159,7 @@
             (should (equal default-directory directory))
             (should (equal beads-hierarchy--root-id "ROOT-1"))
             (should-not beads-hierarchy--refresh-process)))
-      (when-let ((buffer (get-buffer buffer-name))) (kill-buffer buffer)))))
+      (when-let* ((buffer (get-buffer buffer-name))) (kill-buffer buffer)))))
 
 (provide 'beads-hierarchy-test)
 ;;; beads-hierarchy-test.el ends here

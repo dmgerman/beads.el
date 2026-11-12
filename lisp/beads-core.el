@@ -67,7 +67,7 @@ Delegates to the backend abstraction layer.
 Signals error if command fails or returns invalid JSON."
   (let* ((backend (beads-backend-for-project))
          (program (beads-backend-cli-program-path backend))
-         (extra (when-let ((fn (beads-backend-cli-extra-flags backend)))
+         (extra (when-let* ((fn (beads-backend-cli-extra-flags backend)))
                   (funcall fn subcommand)))
          (full-args (append extra (list subcommand) args (list "--json"))))
     (let ((output (beads-backend--call-json program full-args)))

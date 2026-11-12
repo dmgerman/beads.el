@@ -214,7 +214,7 @@ Keys are converted from snake_case to --kebab-case."
          (program (beads-backend-cli-program-path backend))
          (op-args (funcall (beads-backend-op-to-cli-args backend)
                            operation args))
-         (extra (when-let ((fn (beads-backend-cli-extra-flags backend)))
+         (extra (when-let* ((fn (beads-backend-cli-extra-flags backend)))
                   (funcall fn operation))))
     (append (list program) extra op-args '("--json"))))
 
