@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 """
 Lint Emacs Lisp files - check syntax, parentheses, and byte-compile.
+Byte-compilation warnings fail the lint.
 """
 import subprocess
 import sys
 from pathlib import Path
+
+import elisp_env
 
 
 def find_el_files(root_dir):
@@ -12,9 +15,9 @@ def find_el_files(root_dir):
     root = Path(root_dir)
     return [
         f for f in root.rglob("*.el")
-        if not any(part.startswith('.') for part in f.parts)
-        and 'dev' not in f.parts
-        and 'vendor' not in f.parts
+        if not any(part.startswith('.') for part in f.relative_to(root).parts)
+        and 'dev' not in f.relative_to(root).parts
+        and 'vendor' not in f.relative_to(root).parts
     ]
 
 
@@ -33,7 +36,7 @@ def check_parens(el_file):
 """
 
     result = subprocess.run(
-        ["emacs", "-Q", "--batch", "--eval", elisp_code],
+        [elisp_env.emacs_program(), "-Q", "--batch", "--eval", elisp_code],
         capture_output=True,
         text=True
     )
@@ -41,27 +44,10 @@ def check_parens(el_file):
     return result.returncode == 0, result.stderr + result.stdout
 
 
-def find_vendor_paths(root_dir):
-    """Find all vendor package directories (absolute paths)."""
-    vendor_dir = root_dir / "vendor"
-    if not vendor_dir.exists():
-        return []
-    paths = []
-    for item in vendor_dir.iterdir():
-        if item.is_dir():
-            paths.append(str(item.absolute()))
-    return paths
-
-
-def byte_compile(el_file, root_dir):
+def byte_compile(el_file):
     """Byte-compile the file to catch warnings and errors."""
-    lisp_dir = root_dir / "lisp"
-    load_paths = ["-L", str(root_dir), "-L", str(lisp_dir)]
-    for vendor_path in find_vendor_paths(root_dir):
-        load_paths.extend(["-L", vendor_path])
-
     result = subprocess.run(
-        ["emacs", "-Q", "--batch"] + load_paths +
+        [elisp_env.emacs_program(), "-Q", "--batch"] + elisp_env.load_path_args() +
         ["--eval", "(setq load-prefer-newer t)", "-f", "batch-byte-compile", str(el_file)],
         capture_output=True,
         text=True
@@ -82,6 +68,7 @@ def main():
         print("No .el files found")
         return 0
 
+    elisp_env.print_environment()
     print(f"Linting {len(el_files)} Emacs Lisp file(s)...")
     print()
 
@@ -99,30 +86,30 @@ def main():
             all_passed = False
             continue
 
-        compile_ok, has_warnings, compile_output = byte_compile(el_file, root_dir)
+        compile_ok, has_warnings, compile_output = byte_compile(el_file)
 
         if not compile_ok:
             print(f"  ✗ Byte-compilation failed")
             print(f"    {compile_output}")
             all_passed = False
         elif has_warnings:
-            print(f"  ⚠ Warnings during byte-compilation")
+            print(f"  ✗ Warnings during byte-compilation")
             print(f"    {compile_output}")
             total_warnings += compile_output.count("Warning:")
+            all_passed = False
         else:
             print(f"  ✓ Passed")
 
         print()
 
     if all_passed:
-        if total_warnings > 0:
-            print(f"✓ All checks passed with {total_warnings} warning(s)")
-            return 0
-        else:
-            print("✓ All checks passed")
-            return 0
+        print("✓ All checks passed")
+        return 0
     else:
-        print("✗ Some checks failed")
+        if total_warnings > 0:
+            print(f"✗ Some checks failed ({total_warnings} warning(s))")
+        else:
+            print("✗ Some checks failed")
         return 1
 
 

@@ -7,6 +7,22 @@ This document describes the development workflow for beads.el.
 - Emacs 30.2+ (installed at `/opt/homebrew/bin/emacs`)
 - Python 3 (for build scripts)
 - mise (for task running)
+- [vui.el](https://github.com/d12frosted/vui.el), cloned into `vendor/vui.el`
+  (git-ignored) or anywhere else with `BEADS_VUI_DIR` pointing at it
+
+## Environment
+
+The lint, test, and build scripts take their environment only from these
+variables, and print the versions they use at the start of every run:
+
+| Variable | Default | Meaning |
+|----------|---------|---------|
+| `EMACS` | `emacs` on `PATH` | Emacs binary |
+| `BEADS_VUI_DIR` | `vendor/vui.el` | Directory containing `vui.el` |
+| `BEADS_EMACSEN` | (none) | Emacs binaries for `check-ci` |
+
+The scripts fail if `vui.el` is missing; nothing else is added to the
+`load-path`.
 
 ## Development Tasks
 
@@ -22,6 +38,8 @@ This will:
 - Check for balanced parentheses using `check-parens`
 - Byte-compile files to catch warnings and errors
 - Report any syntax issues
+
+Byte-compilation warnings fail the lint.
 
 ### Testing
 
@@ -55,6 +73,21 @@ Run both lint and test:
 ```bash
 mise run check
 ```
+
+### Checking Several Emacs Versions
+
+`mise run check` uses a single Emacs.  Before pushing, run lint and tests on
+every Emacs that matters: the `Package-Requires` floor, the latest release, and
+a snapshot:
+
+```bash
+BEADS_EMACSEN="/path/to/emacs-28.1 /path/to/emacs-30.2 /path/to/emacs-snapshot" \
+  mise run check-ci
+```
+
+Every entry runs even after a failure, and a summary lists each result.  Add
+`--integration` (`python3 scripts/check_ci.py --integration`) to also run the
+CLI integration tests, which need `bd`.
 
 ## File Structure
 

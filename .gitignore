@@ -13,3 +13,4 @@ docs/beads.info
 # Beads daemon runtime files
 .beads/daemon-*.log*
 .beads/*.startlock
+__pycache__/

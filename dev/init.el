@@ -17,7 +17,8 @@
                      (directory-file-name
                       (file-name-directory load-file-name)))))
   (add-to-list 'load-path (expand-file-name "lisp" project-root))
-  (add-to-list 'load-path (expand-file-name "vendor/vui.el" project-root)))
+  (add-to-list 'load-path (or (getenv "BEADS_VUI_DIR")
+                              (expand-file-name "vendor/vui.el" project-root))))
 
 (require 'beads)
 (require 'markdown-mode)

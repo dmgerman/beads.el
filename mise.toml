@@ -18,6 +18,10 @@ run = "python3 scripts/build.py"
 description = "Run lint and test"
 depends = ["lint", "test"]
 
+[tasks.check-ci]
+description = "Run lint and test on every Emacs in BEADS_EMACSEN"
+run = "python3 scripts/check_ci.py"
+
 [tasks.interactive]
 description = "Launch Emacs with beads.el loaded for interactive testing"
 depends = ["build"]

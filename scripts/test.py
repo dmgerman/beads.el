@@ -7,6 +7,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import elisp_env
+
 
 def find_test_files(test_dir):
     """Find all test files in the test directory."""
@@ -22,15 +24,7 @@ def run_ert_tests(test_files, integration=False):
         print("No test files found")
         return 0
 
-    root_dir = Path(__file__).parent.parent
-
-    load_dirs = sorted({
-        str(el_file.parent)
-        for el_file in root_dir.rglob("*.el")
-        if not any(part.startswith('.') for part in el_file.relative_to(root_dir).parts)
-        and not el_file.name.endswith("-test.el")
-    })
-    load_path_args = [arg for directory in load_dirs for arg in ("-L", directory)]
+    elisp_env.print_environment(include_bd=integration)
     selector = "(tag :cli)" if integration else "(not (tag :integration))"
 
     elisp_code = f"""
@@ -46,7 +40,8 @@ def run_ert_tests(test_files, integration=False):
 (ert-run-tests-batch-and-exit '{selector}))
 """
 
-    cmd = ["emacs", "-Q", "--batch"] + load_path_args + ["--eval", elisp_code]
+    cmd = ([elisp_env.emacs_program(), "-Q", "--batch"]
+           + elisp_env.load_path_args() + ["--eval", elisp_code])
 
     print(f"Running {len(test_files)} test file(s)...")
     print()
