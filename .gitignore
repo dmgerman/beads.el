@@ -14,3 +14,7 @@ docs/beads.info
 .beads/daemon-*.log*
 .beads/*.startlock
 __pycache__/
+.elpa/
+.elpa-melpa/
+.melpazoid/
+*.profraw
